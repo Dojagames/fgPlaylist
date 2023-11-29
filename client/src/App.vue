@@ -11,6 +11,8 @@ export default {
   data(){
     return {
       view: "login",
+      votes: [],
+      playlist: [],
     }
   },
   components: {
@@ -36,6 +38,8 @@ export default {
         if(shortedUrl.includes(":")) shortedUrl = shortedUrl.substring(8);
         id = shortedUrl.split("/")[2];
 
+        this.votes.push(id);
+        localStorage.setItem("votes", JSON.stringify(this.votes));
         socket.emit('addSong', (id));
       }
   },
@@ -45,6 +49,11 @@ export default {
       this.checkPw(loginStored);
     }
 
+    const votesStored = localStorage.getItem("votes");
+    if(votesStored){
+      this.votes = JSON.parse(votesStored);
+    }
+
     socket.on("loginFailed", () => {
       alert("login failed");
     });
@@ -52,6 +61,10 @@ export default {
     socket.on("loggedIn", (pw) => {
       this.view = "main";
       localStorage.setItem("loginCred", pw);
+    });
+
+    socket.on("playlist", (_playlist) => {
+      this.playlist = _playlist;
     });
 
   },
@@ -66,7 +79,7 @@ export default {
 
 <template>
   <Login v-if="view === 'login'"></Login>
-  <Main v-else></Main>
+  <Main v-else :playlist="playlist"></Main>
 </template>
 
 <style scoped>
