@@ -38,7 +38,7 @@ export default {
         if(shortedUrl.includes(":")) shortedUrl = shortedUrl.substring(8);
         id = shortedUrl.split("/")[2];
 
-        this.votes.push(id);
+        this.votes.push([id, true]);
         localStorage.setItem("votes", JSON.stringify(this.votes));
         socket.emit('addSong', (id));
       }
