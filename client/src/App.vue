@@ -24,6 +24,20 @@ export default {
       checkPw(pw){
         socket.emit('verifyPw', (pw));
       },
+      AddSong(_song){
+        let shortedUrl = _song.split("?")[0];
+        let id;
+
+        if(!shortedUrl.includes("open.spotify.com/track/")){
+          alert("invalid link");
+          return;
+        }
+
+        if(shortedUrl.includes(":")) shortedUrl = shortedUrl.substring(8);
+        id = shortedUrl.split("/")[2];
+
+        socket.emit('addSong', (id));
+      }
   },
   created() {
     const loginStored = localStorage.getItem("loginCred");

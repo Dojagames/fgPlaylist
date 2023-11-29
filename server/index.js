@@ -19,7 +19,7 @@ io.on('connection', (socket)=> {
         if(pw == process.env.PW){
             socket.emit("loggedIn", (pw));
         } else {
-            socket.emit("loginFailed"); 
+            socket.emit("loginFailed");
         }
    })
 });
