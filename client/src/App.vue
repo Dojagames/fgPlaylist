@@ -5,6 +5,7 @@ const socket = io('localhost:9012');
 
 import Login from './components/login.vue';
 import Main from './components/main.vue';
+import { SocketAddress } from 'net';
  
 
 export default {
@@ -26,6 +27,7 @@ export default {
       checkPw(pw){
         socket.emit('verifyPw', (pw));
       },
+
       AddSong(_song){
         let shortedUrl = _song.split("?")[0];
         let id;
@@ -41,7 +43,13 @@ export default {
         this.votes.push([id, true]);
         localStorage.setItem("votes", JSON.stringify(this.votes));
         socket.emit('addSong', (id));
-      }
+      },
+
+      setVote(_link, _vote){
+        this.votes.push([_link, _vote]);
+        localStorage.setItem("votes", JSON.stringify(this.votes));
+        socket.emit("voteForSong", ([_link, _vote]));
+      },
   },
   created() {
     const loginStored = localStorage.getItem("loginCred");
