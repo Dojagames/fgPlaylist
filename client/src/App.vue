@@ -13,6 +13,8 @@ export default {
       view: "login",
       votes: [],
       playlist: [],
+      addedList: [],
+      declinedList: [],
     }
   },
   components: {
@@ -40,15 +42,25 @@ export default {
         id = shortedUrl.split("/")[2];
 
         this.votes.push([id, true]);
+        this.playlist.push({url: id, votes: 1, downvotes: 0});
         localStorage.setItem("votes", JSON.stringify(this.votes));
         socket.emit('addSong', (id));
       },
 
       setVote(_link, _vote){
+        console.log(_link);
         this.votes.push([_link, _vote]);
         localStorage.setItem("votes", JSON.stringify(this.votes));
         socket.emit("voteForSong", ([_link, _vote]));
       },
+
+      changeVote(_link, _vote){
+        this.votes = this.votes.filter(e => e[0] != _link);
+        this.votes.push([_link, _vote]);
+        localStorage.setItem("votes", JSON.stringify(this.votes));
+        socket.emit("voteForSongChange", ([_link, _vote]));
+      },
+
   },
   created() {
     const loginStored = localStorage.getItem("loginCred");
@@ -70,8 +82,18 @@ export default {
       localStorage.setItem("loginCred", pw);
     });
 
+    socket.on("error", (msg) => {
+      this.playlist.pop();
+    });
+
     socket.on("playlist", (_playlist) => {
       this.playlist = _playlist;
+    });
+    
+    socket.on("allPlaylist", ([_queue, _added, _declined]) => {
+      this.playlist = _queue;
+      this.addedList = _added;
+      this.declinedList = _declined;
     });
 
   },
@@ -86,7 +108,7 @@ export default {
 
 <template>
   <Login v-if="view === 'login'"></Login>
-  <Main v-else :playlist="playlist"></Main>
+  <Main v-else :playlist="playlist" :voted="votes" :added="addedList" :declined="declinedList"></Main>
 </template>
 
 <style scoped>

@@ -19,14 +19,14 @@ io.on('connection', (socket)=> {
         if(pw == process.env.PW){
             socket.emit("loggedIn", (pw));
             
-            socket.emit("playlist", (urlList));
+            socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
         } else {
             socket.emit("loginFailed");
         }
    });
 
     socket.on("addSong", async (link) => {
-        if(mainPlaylist.includes(link)){
+        if(mainPlaylist.some(e => e.url == link)){
             console.log("test");
             socket.emit("error", ("in Queue"));
             return;
@@ -35,16 +35,34 @@ io.on('connection', (socket)=> {
             socket.emit("error", ("already in Playlist"));
             return;
         }
+        if(addedPlaylist.includes(link)){
+            socket.emit("error", ("already added"));
+            return;
+        }
+        if(declinedPlaylist.includes(link)){
+            socket.emit("error", ("already declined"));
+            return;
+        }
 
         mainPlaylist.push({ url: link, votes: 1, downvotes: 0});
-        urlList.push(link);
-        await playlistCollection.updateOne({ "_id": "queue"}, {$push: { songs: link }})
+        await playlistCollection.updateOne({ "_id": "queue"}, {$push: { songs: { url: link, votes: 1, downvotes: 0} }});
+
+        socket.broadcast.emit("playlist", (mainPlaylist));
     });
 
     socket.on("voteForSong", async ([link, vote]) => {
-        const curIndex = mainPlaylist.indexOf(link);
+        let curIndex = -1; //index of function for obj
+        for(let i = 0; i < mainPlaylist.length; i++){
+            if(mainPlaylist[i].url == link);
+            curIndex = i;
+            break;
+        }
+        
         if(curIndex == -1) return;
         
+        await playlistCollection.updateOne({"_id": "queue"}, {$pull: {songs:  mainPlaylist[curIndex]}});
+        
+
         if(vote){
             mainPlaylist[curIndex].votes += 1;
         } else {
@@ -52,19 +70,56 @@ io.on('connection', (socket)=> {
         };
 
 
-        if(mainPlaylist[curIndex].votes >= 2){
-            addedPlaylist.push(link);
-            await playlistCollection.updateOne({"_id": "added"}, {$push: {songs: link}});
-        }
-        if(mainPlaylist[curIndex].downvotes >= 2){
-            declinedPlaylist.push(link);
-            await playlistCollection.updateOne({"_id": "declined"}, {$push: {songs: link}});
+        await checkSongStatus(link, curIndex);
 
-            mainPlaylist = mainPlaylist.filter((e) => e.url !== link);
-            await playlistCollection.updateOne({"_id": "queue"}, {songs: mainPlaylist});
-        }
+        socket.broadcast.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+        socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
     });
+
+    socket.on("voteForSongChange", async ([link, vote]) => {
+        let curIndex = -1; //index of function for obj
+        for(let i = 0; i < mainPlaylist.length; i++){
+            if(mainPlaylist[i].url == link);
+            curIndex = i;
+            break;
+        }
+
+        if(curIndex == -1) return;
+
+        await playlistCollection.updateOne({"_id": "queue"}, {$pull: {songs:  mainPlaylist[curIndex]}});
+
+        if(vote){
+            mainPlaylist[curIndex].votes += 1;
+            mainPlaylist[curIndex].downvotes -= 1;
+        } else {
+            mainPlaylist[curIndex].votes -= 1;
+            mainPlaylist[curIndex].downvotes += 1;
+        }
+
+        await checkSongStatus(link, curIndex);
+
+        socket.broadcast.emit("playlist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+        socket.emit("playlist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+    });
+
+
 });
+
+async function checkSongStatus(_link, _index){
+    if(mainPlaylist[_index].votes >= 2){
+        addedPlaylist.push(_link);
+        await playlistCollection.updateOne({"_id": "added"}, {$push: {songs: _link}});
+
+        mainPlaylist = mainPlaylist.filter((e) => e.url !== _link);
+    } else if(mainPlaylist[_index].downvotes >= 2){
+        declinedPlaylist.push(_link);
+        await playlistCollection.updateOne({"_id": "declined"}, {$push: {songs: _link}});
+
+        mainPlaylist = mainPlaylist.filter((e) => e.url !== _link);
+    } else {
+        await playlistCollection.updateOne({"_id": "queue"}, {$push: {songs: mainPlaylist[_index]}});
+    }
+}
 
 
 async function AddSong(){
@@ -75,7 +130,6 @@ async function AddSong(){
 
 
 var mainPlaylist = [];
-var urlList = [];
 var addedPlaylist = [];
 var declinedPlaylist = [];
 
@@ -90,14 +144,17 @@ server.listen(9012, async () => {
         const mainPlaylistAwait = await playlistCollection.findOne({"_id": "queue"});
         if(mainPlaylistAwait.hasOwnProperty("songs")){
             mainPlaylist = mainPlaylistAwait.songs;
-            mainPlaylist.forEach(e => {
-                urlList.push(e);
-            });
         }
         
-        addedPlaylist = await playlistCollection.findOne({"_id": "added"});
-        
-        declinedPlaylist = await playlistCollection.findOne({"_id": "declined"});
+        addedPlaylistAwait = await playlistCollection.findOne({"_id": "added"});
+        if(addedPlaylistAwait.hasOwnProperty("songs")){
+            addedPlaylist = addedPlaylistAwait.songs;
+        }
+
+        declinedPlaylistAwait = await playlistCollection.findOne({"_id": "declined"});
+        if(declinedPlaylistAwait.hasOwnProperty("songs")){
+            declinedPlaylist = declinedPlaylistAwait.songs;
+        }
 
         const inPlaylistAwait = await playlistCollection.findOne({"_id": "inPlaylist"});
         if(inPlaylistAwait.hasOwnProperty("songs")){
