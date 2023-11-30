@@ -18,12 +18,20 @@ io.on('connection', (socket)=> {
     socket.on('verifyPw', (pw) => {
         if(pw == process.env.PW){
             socket.emit("loggedIn", (pw));
-            
-            socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+            socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));       
         } else {
             socket.emit("loginFailed");
         }
    });
+   
+   socket.on('verifyAdminPw', (pw) => {
+        if(pw == process.env.ADMIN_PW){
+            socket.emit("loggedIn");
+            socket.emit("addedPlaylist", (tempAddedList));
+        } else {
+            socket.emit("loginFailed");
+        }
+    });
 
     socket.on("addSong", async (link) => {
         if(mainPlaylist.some(e => e.url == link)){
@@ -106,13 +114,22 @@ io.on('connection', (socket)=> {
         socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
     });
 
+    socket.on("addedSongsToPlaylist", async () => {
+        tempAddedList = [];
+        await playlistCollection.updateOne({"_id": "tempAddedList"}, {$unset:{songs: []}});
+        socket.emit("addedPlaylist", (tempAddedList));
+    })
+
 
 });
 
 async function checkSongStatus(_link, _index){
     if(mainPlaylist[_index].votes >= 2){
         addedPlaylist.push(_link);
+        tempAddedList.push(_link);
+
         await playlistCollection.updateOne({"_id": "added"}, {$push: {songs: _link}});
+        await playlistCollection.updateOne({"_id": "tempAddedList"}, {$push: {songs: _link}});
 
         mainPlaylist = mainPlaylist.filter((e) => e.url !== _link);
     } else if(mainPlaylist[_index].downvotes >= 2){
@@ -127,7 +144,7 @@ async function checkSongStatus(_link, _index){
 
 
 async function AddSong(){
-    await playlistCollection.insertOne({ "_id": "declined", songs: [
+    await playlistCollection.insertOne({ "_id": "tempAddedList", songs: [
         
     ]})
 }
@@ -136,6 +153,7 @@ async function AddSong(){
 var mainPlaylist = [];
 var addedPlaylist = [];
 var declinedPlaylist = [];
+var tempAddedList = [];
 
 var inPlaylist = [];
 
@@ -150,12 +168,12 @@ server.listen(9012, async () => {
             mainPlaylist = mainPlaylistAwait.songs;
         }
         
-        addedPlaylistAwait = await playlistCollection.findOne({"_id": "added"});
+        const addedPlaylistAwait = await playlistCollection.findOne({"_id": "added"});
         if(addedPlaylistAwait.hasOwnProperty("songs")){
             addedPlaylist = addedPlaylistAwait.songs;
         }
 
-        declinedPlaylistAwait = await playlistCollection.findOne({"_id": "declined"});
+        const declinedPlaylistAwait = await playlistCollection.findOne({"_id": "declined"});
         if(declinedPlaylistAwait.hasOwnProperty("songs")){
             declinedPlaylist = declinedPlaylistAwait.songs;
         }
@@ -163,6 +181,11 @@ server.listen(9012, async () => {
         const inPlaylistAwait = await playlistCollection.findOne({"_id": "inPlaylist"});
         if(inPlaylistAwait.hasOwnProperty("songs")){
             inPlaylist = inPlaylistAwait.songs;
+        }
+
+        const tempAddedListAwait = await playlistCollection.findOne({"_id": "tempAddedList"});
+        if(tempAddedListAwait.hasOwnProperty("songs")){
+            tempAddedList = tempAddedListAwait.songs;
         }
         
 

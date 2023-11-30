@@ -30,7 +30,7 @@ export default {
 
 <template>
   <div id="wrapper">
-    <input placeholder="password" v-model="pwInput">
+    <input placeholder="password" v-model="pwInput" @keyup.enter="this.$parent.checkPw(pwInput)">
     <button @click="this.$parent.checkPw(pwInput)">Login</button>
   </div>
 </template>
@@ -45,7 +45,6 @@ export default {
     width: 30%;
     height: 40%;
 
-    background-color: red;
     display: flex;
     flex-direction: column;
     justify-content: center;
