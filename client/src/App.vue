@@ -5,7 +5,6 @@ const socket = io('localhost:9012');
 
 import Login from './components/login.vue';
 import Main from './components/main.vue';
-import { SocketAddress } from 'net';
  
 
 export default {

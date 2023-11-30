@@ -9,6 +9,7 @@ export default {
   data(){
     return {
         inputLink: "",
+        currentPanel: "Pending",
     }
   },
   components: {
@@ -51,9 +52,11 @@ export default {
       </div>
       
     </div>
-  <div class="track">
-    
-  </div>
+    <div id="bottomNav">
+      <div :class="(currentPanel == 'Pending') ? activeNavPanel : navPanel">Pending</div>
+      <div :class="(currentPanel == 'Accepted') ? activeNavPanel : navPanel">Accepted</div>
+      <div :class="(currentPanel == 'Denied') ? activeNavPanel : navPanel">Denied</div>
+    </div>
 </template>
 
 <style scoped>
@@ -101,5 +104,41 @@ export default {
 
     .buttonWrapper button:hover{
       cursor: pointer;
+    }
+
+    #bottomNav{
+      width: 100%;
+      height: 45px;
+      
+
+      position: absolute;
+      bottom: 0;
+
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      flex-direction: row;
+    }
+
+    .navPanel{
+      width: 30%;
+      height: 100%;
+      font-size: 2rem;
+      text-align: center;
+      border-radius: 20px;
+      border: 1px solid white;
+      margin-bottom: 1px;
+    }
+    
+    .activeNavPanel{
+      width: 30%;
+      height: 100%;
+      font-size: 2rem;
+      text-align: center;
+      border-radius: 20px;
+      border: 1px solid rgb(20, 218, 20);
+      margin-bottom: 1px;
+      color: rgb(20, 218, 20);
     }
 </style>
