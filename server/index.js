@@ -115,6 +115,10 @@ io.on('connection', (socket)=> {
     });
 
     socket.on("addedSongsToPlaylist", async () => {
+
+        await playlistCollection.updateOne({"_id": "inPlaylist"}, {$push:{songs: tempAddedList}});
+        inPlaylist = inPlaylist.concat(tempAddedList);
+
         tempAddedList = [];
         await playlistCollection.updateOne({"_id": "tempAddedList"}, {$unset:{songs: []}});
         socket.emit("addedPlaylist", (tempAddedList));
