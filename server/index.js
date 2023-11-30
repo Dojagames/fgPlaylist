@@ -53,9 +53,10 @@ io.on('connection', (socket)=> {
     socket.on("voteForSong", async ([link, vote]) => {
         let curIndex = -1; //index of function for obj
         for(let i = 0; i < mainPlaylist.length; i++){
-            if(mainPlaylist[i].url == link);
-            curIndex = i;
-            break;
+            if(mainPlaylist[i].url == link){
+                curIndex = i;
+                break;
+            }
         }
         
         if(curIndex == -1) return;
@@ -79,12 +80,14 @@ io.on('connection', (socket)=> {
     socket.on("voteForSongChange", async ([link, vote]) => {
         let curIndex = -1; //index of function for obj
         for(let i = 0; i < mainPlaylist.length; i++){
-            if(mainPlaylist[i].url == link);
-            curIndex = i;
-            break;
+            if(mainPlaylist[i].url == link){
+                curIndex = i;
+                break;
+            }
         }
 
         if(curIndex == -1) return;
+
 
         await playlistCollection.updateOne({"_id": "queue"}, {$pull: {songs:  mainPlaylist[curIndex]}});
 
@@ -96,10 +99,11 @@ io.on('connection', (socket)=> {
             mainPlaylist[curIndex].downvotes += 1;
         }
 
+
         await checkSongStatus(link, curIndex);
 
-        socket.broadcast.emit("playlist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
-        socket.emit("playlist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+        socket.broadcast.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
+        socket.emit("allPlaylist", ([mainPlaylist, addedPlaylist, declinedPlaylist]));
     });
 
 
