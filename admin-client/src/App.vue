@@ -1,8 +1,3 @@
-<!-- 
-    login with spotify
-    sync list with spotify playlist in both ways
-    auto add voted songs to playlist
- -->
 <script>
 export default {
 

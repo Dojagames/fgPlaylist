@@ -1,0 +1,13 @@
+body{
+  margin: 0;
+  background-color: #363636;
+}
+
+*{
+  color: white;
+  font-family: 'Abel', sans-serif;
+}
+
+.clickable{
+  cursor: pointer;
+}
