@@ -125,7 +125,12 @@ io.on('connection', (socket)=> {
         socket.emit("addedPlaylist", (tempAddedList));
     })
 
+    socket.on("adminUpdateMainList", async (_list) => {
+        await playlistCollection.deleteOne({"_id": "inPlaylist"}); 
+        await playlistCollection.insertOne({ "_id": "inPlaylist", songs: _list})
 
+        mainPlaylist = _list;
+    });
 });
 
 async function checkSongStatus(_link, _index){

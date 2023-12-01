@@ -8,7 +8,7 @@ export default {
     return {
       view: 'login',
       //redirect_uri: 'https://fgPlaylistAdmin.jonx.dev/callback',
-      redirect_uri: 'http://localhost:5173/callback',
+      redirect_uri: 'http://localhost:5174/callback',
       TOKEN: 'https://accounts.spotify.com/api/token',
       AUTHORIZE: 'https://accounts.spotify.com/authorize',
       USER: 'https://accounts.spotify.com/v1/me',
@@ -23,6 +23,7 @@ export default {
       pwInput: '',
 
       addedList: [],
+      mainlist: [],
     }
   },
   components: {
@@ -156,8 +157,18 @@ export default {
         };
       },
 
-      doSmtWithData(_data, instruction){
-        
+      doSmtWithData (_data, instruction){
+        if(instruction == "getPlaylist"){
+          _data.items.forEach( (e) => {
+            this.mainlist.push(e.track.id);
+          });
+        }
+        if(_data.next){
+          this.CallApi( 'GET', _data.next, null, 'getPlaylist');
+        } else {
+          console.log(this.mainlist);
+          socket.emit("adminUpdateMainList", (this.mainlist));
+        }
       },
 
       AuthSuccess(data){
@@ -186,6 +197,11 @@ export default {
 
         //socket.io
         socket.emit("addedSongsToPlaylist");
+      },
+
+      updatePlaylist(){
+        this.mainlist = [];
+        this.CallApi( 'GET', `https://api.spotify.com/v1/playlists/0wjeEZSbCzH9aJh4jpIMWO/tracks`, null, 'getPlaylist');
       },
 
   },
@@ -234,6 +250,7 @@ export default {
     <div class="songlist" v-for="song in addedList">
       {{ song }}
     </div>
+    <button @click="updatePlaylist()">updatePlaylist</button>
   </div>
 </template>
 
