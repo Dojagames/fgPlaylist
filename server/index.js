@@ -120,7 +120,8 @@ io.on('connection', (socket)=> {
         inPlaylist = inPlaylist.concat(tempAddedList);
 
         tempAddedList = [];
-        await playlistCollection.updateOne({"_id": "tempAddedList"}, {$unset:{songs: []}});
+        await playlistCollection.deleteOne({"_id": "tempAddedList"}); 
+        await playlistCollection.insertOne({ "_id": "tempAddedList", songs: []})
         socket.emit("addedPlaylist", (tempAddedList));
     })
 

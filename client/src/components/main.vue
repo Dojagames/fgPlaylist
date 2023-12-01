@@ -58,6 +58,24 @@ export default {
   watch: {
     
   },
+  computed: {
+    sortedByVote: function (){
+      const songs = [... this.playlist];
+      let front = [];
+      let back = [];
+
+      songs.forEach(e => {
+
+        if(this.voted.some((f) => f[0] == e.url)){
+          back.push(e);
+        } else {
+          front.push(e)
+        }
+      });
+
+      return front.concat(back);
+    }
+  }
 
 }
 </script>
@@ -76,7 +94,7 @@ export default {
     </div>
 
     <div class="mainPanel" :style="(currentPanel == 'Pending')? 'display:flex': 'display:none;'">
-      <div v-for="song in playlist" class="songPanel">
+      <div v-for="song in sortedByVote" class="songPanel">
         <iframe style="border-radius:12px; position: relative; margin-top: 10px;left: 50%; transform: translateX(-50%);" 
         :src= getSpotifyEmbed(song.url)
         width="350" height="152" frameBorder="0" allowfullscreen="" 
