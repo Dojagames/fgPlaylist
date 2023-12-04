@@ -129,7 +129,7 @@ io.on('connection', (socket)=> {
         await playlistCollection.deleteOne({"_id": "inPlaylist"}); 
         await playlistCollection.insertOne({ "_id": "inPlaylist", songs: _list})
 
-        mainPlaylist = _list;
+        mainPlaylist = _list; //inplaylist ?
     });
 });
 
