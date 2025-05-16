@@ -40,3 +40,6 @@ Vielleicht, wenn mal wieder drei Leute gleichzeitig was zu sagen haben,
 aber keiner bereit ist, 5 Stunden RAF Camora zu skippen.
 
 ---
+
+[![merge into culture](https://img.shields.io/badge/merge-into%20culture-1DB954?style=for-the-badge&logo=spotify&logoColor=white)](https://github.com/Dojagames/fgPlaylist)
+
