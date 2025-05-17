@@ -20,8 +20,7 @@ Hat funktioniert. Hat genervt. Hat Spaß gemacht.
 
 ## 🔥 Der eigentliche Grund
 
-Nicht wegen Demokratie.  
-Sondern weil irgendwer sonst wieder 5 Stunden **Standard-Deutschrap** reinknallt  
+Einfach damit nicht irgendwer wieder 5 Stunden **Standard-Deutschrap** reinknallt  
 und so tut, als wär das *"ein bisschen was zum Nebenbei hören."*  
 fgPlaylist war die letzte Bastion des musikalischen Hausfriedens.
 
