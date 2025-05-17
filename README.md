@@ -1,6 +1,6 @@
 # 🥃 fgPlaylist
 
-Ein weiteres Projekt aus der Kategorie: „War mal 'ne Schnapsidee – dann wurde’s plötzlich ziemlich gut... und dann wieder liegen gelassen.“
+Ein weiteres Projekt aus der Kategorie: „War mal 'ne Schnapsidee, dann wurde’s plötzlich ziemlich gut... und dann wieder liegen gelassen.“
 
 ## 🎧 Was ist das?
 
